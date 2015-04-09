@@ -18,15 +18,15 @@ namespace OpenRA.FileSystem
 {
 	public class InstallShieldCABExtractor : IDisposable, IFolder
 	{
-		const uint FILESPLIT = 0x1;
-		const uint FILEOBFUSCATED = 0x2;
-		const uint FILECOMPRESSED = 0x4;
-		const uint FILEINVALID = 0x8;
+		const uint FileSplit         = 0x1;
+		const uint FileObfuscated    = 0x2;
+		const uint FileCompressed    = 0x4;
+		const uint FileInvalid       = 0x8;
 
-		const uint LINKPREV = 0x1;
-		const uint LINKNEXT = 0x2;
-		const uint MAXFILEGROUPCOUNT = 71;
-
+		const uint LinkPrev          = 0x1;
+		const uint LinkNext          = 0x2;
+		const uint MaxFileGroupCount = 71;
+#region Nested Structs
 		struct FileGroup
 		{
 			public readonly string Name;
@@ -35,9 +35,10 @@ namespace OpenRA.FileSystem
 			public FileGroup(BinaryReader reader, long offset)
 			{
 				var nameOffset = reader.ReadUInt32();
-				reader.ReadBytes(0x12);
-				FirstFile = reader.ReadUInt32();
-				LastFile = reader.ReadUInt32();
+				/*   unknown  */ reader.ReadBytes(0x12);
+				FirstFile      = reader.ReadUInt32();
+				LastFile       = reader.ReadUInt32();
+
 				reader.BaseStream.Seek(offset + (long)nameOffset, SeekOrigin.Begin);
 				Name = reader.BaseStream.ReadASCIIZ();
 			}
@@ -49,38 +50,43 @@ namespace OpenRA.FileSystem
 			public uint DataOffsetHigh;
 			public uint FirstFileIndex;
 			public uint LastFileIndex;
+
 			public uint FirstFileOffset;
 			public uint FirstFileOffsetHigh;
 			public uint FirstFileSizeExpanded;
 			public uint FirstFileSizeExpandedHigh;
+
 			public uint FirstFileSizeCompressed;
 			public uint FirstFileSizeCompressedHigh;
-
 			public uint LastFileOffset;
 			public uint LastFileOffsetHigh;
+
 			public uint LastFileSizeExpanded;
 			public uint LastFileSizeExpandedHigh;
 			public uint LastFileSizeCompressed;
 			public uint LastFileSizeCompressedHigh;
+
 			public VolumeHeader(BinaryReader reader)
 			{
-				DataOffset = reader.ReadUInt32();
-				DataOffsetHigh = reader.ReadUInt32();
+				DataOffset      = reader.ReadUInt32();
+				DataOffsetHigh  = reader.ReadUInt32();
 
-				FirstFileIndex = reader.ReadUInt32();
-				LastFileIndex = reader.ReadUInt32();
-				FirstFileOffset = reader.ReadUInt32();
+				FirstFileIndex      = reader.ReadUInt32();
+				LastFileIndex       = reader.ReadUInt32();
+				FirstFileOffset     = reader.ReadUInt32();
 				FirstFileOffsetHigh = reader.ReadUInt32();
-				FirstFileSizeExpanded = reader.ReadUInt32();
-				FirstFileSizeExpandedHigh = reader.ReadUInt32();
-				FirstFileSizeCompressed = reader.ReadUInt32();
+
+				FirstFileSizeExpanded       = reader.ReadUInt32();
+				FirstFileSizeExpandedHigh   = reader.ReadUInt32();
+				FirstFileSizeCompressed     = reader.ReadUInt32();
 				FirstFileSizeCompressedHigh = reader.ReadUInt32();
 
-				LastFileOffset = reader.ReadUInt32();
-				LastFileOffsetHigh = reader.ReadUInt32();
-				LastFileSizeExpanded = reader.ReadUInt32();
+				LastFileOffset           = reader.ReadUInt32();
+				LastFileOffsetHigh       = reader.ReadUInt32();
+				LastFileSizeExpanded     = reader.ReadUInt32();
 				LastFileSizeExpandedHigh = reader.ReadUInt32();
-				LastFileSizeCompressed = reader.ReadUInt32();
+
+				LastFileSizeCompressed     = reader.ReadUInt32();
 				LastFileSizeCompressedHigh = reader.ReadUInt32();
 			}
 		}
@@ -91,12 +97,13 @@ namespace OpenRA.FileSystem
 			public readonly uint VolumeInfo;
 			public readonly long CabDescriptorOffset;
 			public readonly uint CabDescriptorSize;
+
 			public CommonHeader(BinaryReader reader)
 			{
-				Version = reader.ReadUInt32();
-				VolumeInfo = reader.ReadUInt32();
+				Version             = reader.ReadUInt32();
+				VolumeInfo          = reader.ReadUInt32();
 				CabDescriptorOffset = (long)reader.ReadUInt32();
-				CabDescriptorSize = reader.ReadUInt32();
+				CabDescriptorSize   = reader.ReadUInt32();
 			}
 		}
 
@@ -106,18 +113,22 @@ namespace OpenRA.FileSystem
 			public readonly uint FileTableSize;
 			public readonly uint FileTableSize2;
 			public readonly uint DirectoryCount;
+
 			public readonly uint FileCount;
 			public readonly long FileTableOffset2;
+
 			public CabDescriptor(BinaryReader reader, CommonHeader commonHeader)
 			{
 				reader.BaseStream.Seek(commonHeader.CabDescriptorOffset + 0xC, SeekOrigin.Begin);
 				FileTableOffset = (long)reader.ReadUInt32();
-				reader.ReadUInt32();
-				FileTableSize = reader.ReadUInt32();
+				/*    unknown  */ reader.ReadUInt32();
+				FileTableSize   = reader.ReadUInt32();
+
 				FileTableSize2 = reader.ReadUInt32();
 				DirectoryCount = reader.ReadUInt32();
-				reader.ReadUInt64();
-				FileCount = reader.ReadUInt32();
+				/*   unknown  */ reader.ReadUInt64();
+				FileCount      = reader.ReadUInt32();
+
 				FileTableOffset2 = (long)reader.ReadUInt32();
 			}
 		}
@@ -128,10 +139,12 @@ namespace OpenRA.FileSystem
 			public readonly uint	ExpandedSize;
 			public readonly uint	CompressedSize;
 			public readonly uint	DataOffset;
+
 			public readonly byte[]	MD5;
 			public readonly uint	NameOffset;
 			public readonly ushort	DirectoryIndex;
 			public readonly uint	LinkPrevious;
+
 			public readonly uint	LinkNext;
 			public readonly byte	LinkFlags;
 			public readonly ushort	Volume;
@@ -139,30 +152,33 @@ namespace OpenRA.FileSystem
 
 			public FileDescriptor(BinaryReader reader, long tableOffset)
 			{
-				Flags			= reader.ReadUInt16();
-				ExpandedSize		= reader.ReadUInt32();
-				reader.ReadUInt32();
-				CompressedSize		= reader.ReadUInt32();
-				reader.ReadUInt32();
-				DataOffset		= reader.ReadUInt32();
-				reader.ReadUInt32();
-				MD5			= reader.ReadBytes(0x10);
-				reader.ReadBytes(0x10);
-				NameOffset		= reader.ReadUInt32();
-				DirectoryIndex		= reader.ReadUInt16();
-				reader.ReadBytes(0xc);
-				LinkPrevious		= reader.ReadUInt32();
-				LinkNext		= reader.ReadUInt32();
-				LinkFlags		= reader.ReadByte();
-				Volume			= reader.ReadUInt16();
-				var posSave		= reader.BaseStream.Position;
+				Flags            = reader.ReadUInt16();
+				ExpandedSize     = reader.ReadUInt32();
+				/*    unknown   */ reader.ReadUInt32();
+				CompressedSize   = reader.ReadUInt32();
+
+				/*  unknown */ reader.ReadUInt32();
+				DataOffset   = reader.ReadUInt32();
+				/*  unknown */ reader.ReadUInt32();
+				MD5          = reader.ReadBytes(0x10);
+
+				/*   unknown  */ reader.ReadBytes(0x10);
+				NameOffset     = reader.ReadUInt32();
+				DirectoryIndex = reader.ReadUInt16();
+				/*   unknown  */ reader.ReadBytes(0xc);
+				LinkPrevious   = reader.ReadUInt32();
+				LinkNext       = reader.ReadUInt32();
+
+				LinkFlags   = reader.ReadByte();
+				Volume      = reader.ReadUInt16();
+				var posSave = reader.BaseStream.Position;
 
 				reader.BaseStream.Seek(tableOffset + NameOffset, SeekOrigin.Begin);
 				Filename = reader.BaseStream.ReadASCIIZ();
 				reader.BaseStream.Seek(posSave, SeekOrigin.Begin);
 			}
 		}
-
+#endregion
 		readonly Stream hdrFile;
 		CommonHeader commonHeader;
 		CabDescriptor cabDescriptor;
@@ -174,58 +190,41 @@ namespace OpenRA.FileSystem
 		List<FileGroup> fileGroups;
 		int priority;
 		string commonName;
-		public int Priority
-		{
-			get
-			{
-				return priority;
-			}
-		}
+		public int Priority { get { return priority; } }
 
-		public string Name
-		{
-			get
-			{
-				return commonName;
-			}
-		}
+		public string Name { get { return commonName; } }
 
-		public InstallShieldCABExtractor(string hdrFilename, int priority_ = -1)
+		public InstallShieldCABExtractor(string hdrFilename, int priority = -1)
 		{
-			priority = priority_;
-			hdrFile = GlobalFileSystem.Open(hdrFilename);
-			var buff = new List<char>(hdrFilename.Substring(0, hdrFilename.LastIndexOf('.')).ToCharArray());
+			this.priority = priority;
+			hdrFile       = GlobalFileSystem.Open(hdrFilename);
+			var buff      = new List<char>(hdrFilename.Substring(0, hdrFilename.LastIndexOf('.')).ToCharArray());
+
 			for (int i = buff.Count - 1; char.IsNumber(buff[i]); --i)
-			{
 				buff.RemoveAt(i);
-			}
 
-			commonName = new string(buff.ToArray());
-			var reader = new BinaryReader(hdrFile);
-			byte[] bytes = BitConverter.GetBytes(0x28635349);
+			commonName    = new string(buff.ToArray());
+			var reader    = new BinaryReader(hdrFile);
 			var signature = reader.ReadUInt32();
+
 			if (signature != 0x28635349)
 				throw new InvalidDataException("Not an Installshield CAB package");
-			commonHeader = new CommonHeader(reader);
-			cabDescriptor = new CabDescriptor(reader, commonHeader);
-			reader.ReadBytes(0xe);
+
+			commonHeader     = new CommonHeader(reader);
+			cabDescriptor    = new CabDescriptor(reader, commonHeader);
+			/*    unknown   */ reader.ReadBytes(0xe);
 			fileGroupOffsets = new List<uint>();
-			for (uint i = MAXFILEGROUPCOUNT; i > 0; --i)
-			{
+
+			for (uint i = MaxFileGroupCount; i > 0; --i)
 				fileGroupOffsets.Add(reader.ReadUInt32());
-			}
 
 			reader.BaseStream.Seek(commonHeader.CabDescriptorOffset + cabDescriptor.FileTableOffset, SeekOrigin.Begin);
-
 			directoryTable = new List<uint>();
 
 			for (uint i = cabDescriptor.DirectoryCount; i > 0; --i)
-			{
 				directoryTable.Add(reader.ReadUInt32());
-			}
 
 			fileGroups = new List<FileGroup>();
-
 			foreach (uint offset in fileGroupOffsets)
 			{
 				var nextOffset = offset;
@@ -233,8 +232,9 @@ namespace OpenRA.FileSystem
 				{
 					reader.BaseStream.Seek((long)nextOffset + 4 + commonHeader.CabDescriptorOffset, SeekOrigin.Begin);
 					var descriptorOffset = reader.ReadUInt32();
-					nextOffset = reader.ReadUInt32();
+					nextOffset           = reader.ReadUInt32();
 					reader.BaseStream.Seek((long)descriptorOffset + commonHeader.CabDescriptorOffset, SeekOrigin.Begin);
+
 					fileGroups.Add(new FileGroup(reader, commonHeader.CabDescriptorOffset));
 				}
 			}
@@ -249,7 +249,7 @@ namespace OpenRA.FileSystem
 				{
 					AddFileDescriptorToList(index);
 					var fileDescriptor = fileDescriptors[index];
-					var fullFilePath = "{0}\\{1}\\{2}".F(fileGroup.Name, DirectoryName((uint)fileDescriptor.DirectoryIndex), fileDescriptor.Filename);
+					var fullFilePath   = "{0}\\{1}\\{2}".F(fileGroup.Name, DirectoryName((uint)fileDescriptor.DirectoryIndex), fileDescriptor.Filename);
 					fileDict.Add(fullFilePath, fileDescriptor);
 				}
 			}
@@ -264,6 +264,7 @@ namespace OpenRA.FileSystem
 					cabDescriptor.FileTableOffset +
 					directoryTable[(int)index],
 					SeekOrigin.Begin);
+
 			var test = reader.BaseStream.ReadASCIIZ();
 			return test;
 		}
@@ -293,8 +294,10 @@ namespace OpenRA.FileSystem
 					cabDescriptor.FileTableOffset2 +
 					index * 0x57,
 					SeekOrigin.Begin);
+
 			var fd = new FileDescriptor(reader,
 				commonHeader.CabDescriptorOffset + cabDescriptor.FileTableOffset);
+
 			fileDescriptors.Add(index, fd);
 		}
 
@@ -307,41 +310,49 @@ namespace OpenRA.FileSystem
 		{
 			if (!fileDescriptors.ContainsKey(index))
 				AddFileDescriptorToList(index);
+
 			var fd = fileDescriptors[index];
-			if ((fd.Flags & FILEINVALID) != 0) throw new Exception("File Invalid");
-			if ((fd.LinkFlags & LINKPREV) != 0)
+			if ((fd.Flags & FileInvalid) != 0) throw new Exception("File Invalid");
+			if ((fd.LinkFlags & LinkPrev) != 0)
 			{
 				ExtractFile(fd.LinkPrevious, fileName);
 				return;
 			}
 
-			if ((fd.Flags & FILESPLIT) != 0 || (fd.Flags & FILEOBFUSCATED) != 0)
+			if ((fd.Flags & FileSplit) != 0 || (fd.Flags & FileObfuscated) != 0)
 				throw new Exception("Haven't implemented split or obfustcated files");
 
-			var fil = GlobalFileSystem.Open("{0}{1}.cab".F(commonName, fd.Volume));
+			var fil    = GlobalFileSystem.Open("{0}{1}.cab".F(commonName, fd.Volume));
 			var reader = new BinaryReader(fil);
+
 			if (reader.ReadUInt32() != 0x28635349)
 				throw new InvalidDataException("Not an Installshield CAB package");
+
 			reader.BaseStream.Seek(fd.DataOffset, SeekOrigin.Begin);
 			var destfile = File.Open(fileName, FileMode.Create);
-			var writer = new BinaryWriter(destfile);
-			if ((fd.Flags & FILECOMPRESSED) != 0)
+			var writer   = new BinaryWriter(destfile);
+
+			if ((fd.Flags & FileCompressed) != 0)
 			{
-				uint bytesToRead = fd.CompressedSize;
 				ushort bytesToExtract;
 				byte[] readBuffer;
+				uint bytesToRead     = fd.CompressedSize;
 				const int BufferSize = 65536;
+
 				var writeBuffer = new byte[BufferSize];
+				var inf         = new Inflater(true);
 				int extractedBytes;
-				var inf = new ICSharpCode.SharpZipLib.Zip.Compression.Inflater(true);
+
 				while (bytesToRead > 0)
 				{
 					bytesToExtract = reader.ReadUInt16();
-					readBuffer = reader.ReadBytes(bytesToExtract);
+					readBuffer     = reader.ReadBytes(bytesToExtract);
 					inf.SetInput(readBuffer);
 					extractedBytes = inf.Inflate(writeBuffer);
+
 					if (extractedBytes == 0)
 						throw new Exception("Inflater Didn't extract Input");
+
 					writer.Write(writeBuffer, 0, extractedBytes);
 					bytesToRead -= (uint)bytesToExtract + 2;
 
@@ -372,11 +383,11 @@ namespace OpenRA.FileSystem
 		public Stream GetContent(string fileName)
 		{
 			var fileDes = fileDict[fileName];
-			if ((fileDes.Flags & FILEINVALID) != 0) throw new Exception("File Invalid");
-			if ((fileDes.LinkFlags & LINKPREV) != 0)
+			if ((fileDes.Flags & FileInvalid) != 0) throw new Exception("File Invalid");
+			if ((fileDes.LinkFlags & LinkPrev) != 0)
 				throw new NotImplementedException("Link Previous");
 
-			if ((fileDes.Flags & FILESPLIT) != 0 || (fileDes.Flags & FILEOBFUSCATED) != 0)
+			if ((fileDes.Flags & FileSplit) != 0 || (fileDes.Flags & FileObfuscated) != 0)
 				throw new NotImplementedException("Haven't implemented split or obfustcated files");
 
 			List<byte> out_array;
@@ -385,23 +396,27 @@ namespace OpenRA.FileSystem
 				var reader = new BinaryReader(fileStream);
 				if (reader.ReadUInt32() != 0x28635349)
 					throw new InvalidDataException("Not an Installshield CAB package");
+
 				fileStream.Seek(fileDes.DataOffset, SeekOrigin.Begin);
-				if ((fileDes.Flags & FILECOMPRESSED) != 0)
+				if ((fileDes.Flags & FileCompressed) != 0)
 				{
-					long bytesToRead = (long)fileDes.CompressedSize;
 					ushort bytesToExtract;
-					out_array = new List<byte>((int)fileDes.ExpandedSize);
+					long bytesToRead     = (long)fileDes.CompressedSize;
+					out_array            = new List<byte>((int)fileDes.ExpandedSize);
 					const int BufferSize = 65536;
-					var writeBuffer = new byte[BufferSize];
+
 					byte[] readBuffer;
 					int extractedBytes;
-					var inf = new ICSharpCode.SharpZipLib.Zip.Compression.Inflater(true);
+					var writeBuffer = new byte[BufferSize];
+					var inf         = new Inflater(true);
+
 					while (bytesToRead > 0)
 					{
 						bytesToExtract = reader.ReadUInt16();
 						readBuffer = reader.ReadBytes(bytesToExtract);
 						inf.SetInput(readBuffer);
 						extractedBytes = inf.Inflate(writeBuffer);
+
 						if (extractedBytes == 0)
 							throw new Exception("Inflater Didn't extract Input");
 
@@ -413,8 +428,9 @@ namespace OpenRA.FileSystem
 				}
 				else
 				{
-					var size = fileDes.ExpandedSize;
+					var size  = fileDes.ExpandedSize;
 					var bytes = new byte[size];
+
 					fileStream.Read(bytes, 0, (int)size);
 					out_array = new List<byte>(bytes);
 				}

@@ -10,8 +10,6 @@
 
 using System;
 using System.IO;
-using System.Linq;
-using System.Threading;
 using OpenRA.FileSystem;
 using OpenRA.Widgets;
 
@@ -40,11 +38,6 @@ namespace OpenRA.Mods.Common.Widgets.Logic
 			CheckForDisk();
 		}
 
-		bool IsValidDisk(string diskRoot)
-		{
-			return installData.DiskTestFiles.All(f => File.Exists(Path.Combine(diskRoot, f)));
-		}
-
 		bool IsTFD(string diskpath)
 		{
 			bool test = File.Exists(Path.Combine(diskpath, "data1.hdr"));
@@ -59,19 +52,15 @@ namespace OpenRA.Mods.Common.Widgets.Logic
 
 		void CheckForDisk()
 		{
-			var path = InstallUtils.GetMountedDisk(IsValidDisk);
-
+			var path = InstallUtils.GetMountedDisk(IsTFD);
 			if (path != null)
-			{
-				Install(path);
-			}
-			else if ((path = InstallUtils.GetMountedDisk(IsTFD)) != null)
 			{
 				InstallTFD(Platform.ResolvePath(path, "data1.hdr"));
 			}
 		}
 
-		void InstallTFD(string source) {
+		void InstallTFD(string source)
+		{
 			retryButton.IsDisabled = () => true;
 			using (var cab_ex = new InstallShieldCABExtractor(source))
 			{
@@ -84,66 +73,6 @@ namespace OpenRA.Mods.Common.Widgets.Logic
 			}
 
 			continueLoading();
-		}
-
-		void Install(string source)
-		{
-			backButton.IsDisabled = () => true;
-			retryButton.IsDisabled = () => true;
-
-			var dest = Platform.ResolvePath("^", "Content", Game.ModData.Manifest.Mod.Id);
-			var copyFiles = installData.CopyFilesFromCD;
-
-			var packageToExtract = installData.PackageToExtractFromCD.Split(':');
-			var extractPackage = packageToExtract.First();
-			var annotation = packageToExtract.Length > 1 ? packageToExtract.Last() : null;
-
-			var extractFiles = installData.ExtractFilesFromCD;
-
-			var installCounter = 0;
-			var onProgress = (Action<string>)(s => Game.RunAfterTick(() =>
-			{
-				installCounter++;
-			}));
-
-			var onError = (Action<string>)(s => Game.RunAfterTick(() =>
-			{
-				backButton.IsDisabled = () => false;
-				retryButton.IsDisabled = () => false;
-			}));
-
-			new Thread(() =>
-			{
-				try
-				{
-					if (!InstallUtils.CopyFiles(source, copyFiles, dest, onProgress, onError))
-					{
-						onError("Copying files from CD failed.");
-						return;
-					}
-
-					if (!string.IsNullOrEmpty(extractPackage))
-					{
-						if (!InstallUtils.ExtractFromPackage(source, extractPackage, annotation, extractFiles, dest, onProgress, onError))
-						{
-							onError("Extracting files from CD failed.");
-							return;
-						}
-					}
-
-					Game.RunAfterTick(() =>
-					{
-						Ui.CloseWindow();
-						continueLoading();
-					});
-				}
-				catch (Exception e)
-				{
-					onError("Installation failed.\n{0}".F(e.Message));
-					Log.Write("debug", e.ToString());
-					return;
-				}
-			}) { IsBackground = true }.Start();
 		}
 	}
 }

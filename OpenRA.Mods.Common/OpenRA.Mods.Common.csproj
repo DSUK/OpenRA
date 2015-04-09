@@ -555,6 +555,7 @@
     <Compile Include="Widgets\Logic\Ingame\SupportPowerTooltipLogic.cs" />
     <Compile Include="Widgets\Logic\Ingame\WorldTooltipLogic.cs" />
     <Compile Include="Widgets\Logic\Installation\InstallFromCDLogic.cs" />
+    <Compile Include="Widgets\Logic\Installation\InstallFromTFDLogic.cs" />
     <Compile Include="Widgets\Logic\Installation\DownloadPackagesLogic.cs" />
     <Compile Include="Widgets\Logic\Installation\InstallLogic.cs" />
     <Compile Include="Widgets\Logic\Installation\InstallMusicLogic.cs" />
