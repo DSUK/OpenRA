@@ -150,6 +150,7 @@ ContentInstaller:
 	CopyFilesFromCD: conquer.mix, desert.mix, general.mix, scores.mix, sounds.mix, temperat.mix, winter.mix
 	ShippedSoundtracks: 2
 	MusicPackageMirrorList: http://www.openra.net/packages/cnc-music-mirrors.txt
+	TTFDIndexes: 66, 45, 65, 68, 67, 71, 47, 49, 60, 75
 
 ServerTraits:
 	LobbyCommands
