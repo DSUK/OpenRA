@@ -11,64 +11,70 @@ cd "${download_dir}"
 if [ ! -f StyleCopPlus.dll ]; then
 	echo "Fetching StyleCopPlus from nuget"
 	nuget install StyleCopPlus.MSBuild -Version 4.7.49.5 -ExcludeVersion
-	cp ./StyleCopPlus.MSBuild/tools/StyleCopPlus.dll .
+	mv ./StyleCopPlus.MSBuild/tools/StyleCopPlus.dll .
 	rm -rf StyleCopPlus.MSBuild
 fi
 
 if [ ! -f StyleCop.dll ]; then
 	echo "Fetching StyleCop files from nuget"
 	nuget install StyleCop.MSBuild -Version 4.7.49.0 -ExcludeVersion
-	cp ./StyleCop.MSBuild/tools/StyleCop*.dll .
+	mv ./StyleCop.MSBuild/tools/StyleCop*.dll .
 	rm -rf StyleCop.MSBuild
 fi
 
 if [ ! -f ICSharpCode.SharpZipLib.dll ]; then
 	echo "Fetching ICSharpCode.SharpZipLib from nuget"
 	nuget install SharpZipLib -Version 0.86.0 -ExcludeVersion
-	cp ./SharpZipLib/lib/20/ICSharpCode.SharpZipLib.dll .
+	mv ./SharpZipLib/lib/20/ICSharpCode.SharpZipLib.dll .
 	rm -rf SharpZipLib
 fi
 
 if [ ! -f MaxMind.GeoIP2.dll ]; then
 	echo "Fetching MaxMind.GeoIP2 from nuget"
 	nuget install MaxMind.GeoIP2 -Version 2.1.0 -ExcludeVersion
-	cp ./MaxMind.Db/lib/net40/MaxMind.Db.* .
+	mv ./MaxMind.Db/lib/net40/MaxMind.Db.* .
 	rm -rf MaxMind.Db
-	cp ./MaxMind.GeoIP2/lib/net40/MaxMind.GeoIP2* .
+	mv ./MaxMind.GeoIP2/lib/net40/MaxMind.GeoIP2* .
 	rm -rf MaxMind.GeoIP2
-	cp ./Newtonsoft.Json/lib/net40/Newtonsoft.Json* .
+	mv ./Newtonsoft.Json/lib/net40/Newtonsoft.Json* .
 	rm -rf Newtonsoft.Json
-	cp ./RestSharp/lib/net4-client/RestSharp* .
+	mv ./RestSharp/lib/net4-client/RestSharp* .
 	rm -rf RestSharp
 fi
 
 if [ ! -f SharpFont.dll ]; then
 	echo "Fetching SharpFont from nuget"
 	nuget install SharpFont -Version 3.0.1 -ExcludeVersion
-	cp ./SharpFont/lib/net20/SharpFont* .
-	cp ./SharpFont/config/SharpFont.dll.config .
+	mv ./SharpFont/lib/net20/SharpFont* .
+	mv ./SharpFont/config/SharpFont.dll.config .
 	rm -rf SharpFont SharpFont.Dependencies
 fi
 
 if [ ! -f nunit.framework.dll ]; then
 	echo "Fetching NUnit from nuget"
 	nuget install NUnit -Version 2.6.4 -ExcludeVersion
-	cp ./NUnit/lib/nunit.framework* .
+	mv ./NUnit/lib/nunit.framework* .
 	rm -rf NUnit
 fi
 
 if [ ! -f Mono.Nat.dll ]; then
 	echo "Fetching Mono.Nat from nuget"
 	nuget install Mono.Nat -Version 1.2.21 -ExcludeVersion
-	cp ./Mono.Nat/lib/net40/Mono.Nat.dll .
+	mv ./Mono.Nat/lib/net40/Mono.Nat.dll .
 	rm -rf Mono.Nat
 fi
 
 if [ ! -f FuzzyLogicLibrary.dll ]; then
 	echo "Fetching FuzzyLogicLibrary from NuGet."
 	nuget install FuzzyLogicLibrary -Version 1.2.0 -ExcludeVersion
-	cp ./FuzzyLogicLibrary/bin/Release/FuzzyLogicLibrary.dll .
+	mv ./FuzzyLogicLibrary/bin/Release/FuzzyLogicLibrary.dll .
 	rm -rf FuzzyLogicLibrary
+fi
+if [ ! -f Ionic.Zip.dll ]; then
+	echo "Fetching DotNetZip from NuGet."
+	nuget install DotNetZip -Version 1.9.3 -ExcludeVersion
+	mv ./DotNetZip/lib/net20/Ionic.Zip.dll .
+	rm -rf DotNetZip.1.9.3
 fi
 
 if [ ! -f SDL2-CS.dll ]; then

@@ -11,31 +11,14 @@
 using System;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Threading;
+using OpenRA.FileSystem;
 using OpenRA.Widgets;
-using CString=System.IntPtr;
-using Unshield=System.IntPtr;
 
 namespace OpenRA.Mods.Common.Widgets.Logic
 {
 	public class InstallFromTTFDLogic
 	{
-		[DllImport("unshield.dll", EntryPoint="unshield_open_force_version")]
-		public extern static Unshield UnshieldOpenForceVersion(string filename, int version);
-
-		[DllImport("unshield.dll", EntryPoint="unshield_set_log_level")]
-		public extern static void UnshieldSetLogLevel(int log_level);
-
-		[DllImport("unshield.dll", EntryPoint="unshield_file_name")]
-		public extern static CString UnshieldFileName(Unshield cab_file,int index);
-
-		[DllImport("unshield.dll", EntryPoint="unshield_file_save")]
-		public extern static int UnshieldFileExtract(Unshield cab_file,int index,string filename);
-
-		[DllImport("unshield.dll", EntryPoint="unshield_close")]
-		public extern static void UnshieldClose(Unshield cab_file);
-
 		readonly Widget panel;
 		readonly ProgressBarWidget progressBar;
 		readonly LabelWidget statusLabel;
@@ -85,7 +68,7 @@ namespace OpenRA.Mods.Common.Widgets.Logic
 			if (path != null) {
 				Install(path);
 			} else if((path = InstallUtils.GetMountedDisk(IsTTFD)) !=null) {
-				InstallTTFD(Platform.ResolvePath(path,"data1.cab"));
+				InstallTTFD(Platform.ResolvePath(path,"data1.hdr"));
 			} else {
 				insertDiskContainer.IsVisible = () => true;
 				installingContainer.IsVisible = () => false;
@@ -96,15 +79,14 @@ namespace OpenRA.Mods.Common.Widgets.Logic
 			retryButton.IsDisabled = () => true;
 			insertDiskContainer.IsVisible = () => false;
 			installingContainer.IsVisible = () => true;
-
-			UnshieldSetLogLevel(0);
-			Unshield cab_file  = UnshieldOpenForceVersion(source + '\0', -1);
-			foreach(int index in installData.TTFDIndexes){
-				string filename = Marshal.PtrToStringAnsi(UnshieldFileName(cab_file,index));
-				string dest = Platform.ResolvePath("^", "Content", Game.ModData.Manifest.Mod.Id, filename.ToLower());
-				UnshieldFileExtract(cab_file,index,dest + '\0');
-			}	
-			UnshieldClose(cab_file);
+			using(var cab_ex = new InstallShieldCABExtractor(source)) {
+				foreach(uint index in installData.TTFDIndexes){
+					string filename = cab_ex.FileName(index);
+					string dest = Platform.ResolvePath("^", "Content", 
+						Game.ModData.Manifest.Mod.Id, filename.ToLower());
+					cab_ex.ExtractFile(index,dest);
+				}	
+			}
 			continueLoading();
 		}
 
