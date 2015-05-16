@@ -20,11 +20,8 @@ namespace OpenRA.Mods.Common.Widgets.Logic
 	public class InstallFromTTFDLogic
 	{
 		readonly Widget panel;
-		readonly ProgressBarWidget progressBar;
-		readonly LabelWidget statusLabel;
 		readonly Action continueLoading;
 		readonly ButtonWidget retryButton, backButton;
-		readonly Widget installingContainer, insertDiskContainer;
 		readonly ContentInstaller installData;
 
 		[ObjectCreator.UseCtor]
@@ -32,9 +29,7 @@ namespace OpenRA.Mods.Common.Widgets.Logic
 		{
 			installData = Game.ModData.Manifest.Get<ContentInstaller>();
 			this.continueLoading = continueLoading;
-			panel = widget.Get("INSTALL_FROMCD_PANEL");
-			progressBar = panel.Get<ProgressBarWidget>("PROGRESS_BAR");
-			statusLabel = panel.Get<LabelWidget>("STATUS_LABEL");
+			panel = widget.Get("INSTALL_FROM_TTFD_PANEL");
 
 			backButton = panel.Get<ButtonWidget>("BACK_BUTTON");
 			backButton.OnClick = Ui.CloseWindow;
@@ -42,8 +37,6 @@ namespace OpenRA.Mods.Common.Widgets.Logic
 			retryButton = panel.Get<ButtonWidget>("RETRY_BUTTON");
 			retryButton.OnClick = CheckForDisk;
 
-			installingContainer = panel.Get("INSTALLING");
-			insertDiskContainer = panel.Get("INSERT_DISK");
 			CheckForDisk();
 		}
 
@@ -51,14 +44,16 @@ namespace OpenRA.Mods.Common.Widgets.Logic
 		{
 			return installData.DiskTestFiles.All(f => File.Exists(Path.Combine(diskRoot, f)));
 		}
+
 		bool IsTTFD(string diskpath) {
-			bool test = File.Exists(Path.Combine(diskpath,"data1.hdr"));
+			bool test = File.Exists(Path.Combine(diskpath, "data1.hdr"));
 			int i = 0;
-			while(test && i < 14)
+			while (test && i < 14)
 			{
-				test &= File.Exists(Path.Combine(diskpath,String.Format("data{0}.cab",++i)));
+				test &= File.Exists(Path.Combine(diskpath, string.Format("data{0}.cab", ++i)));
 			}
-			return test;	
+
+			return test;
 		}
 
 		void CheckForDisk()
@@ -67,26 +62,24 @@ namespace OpenRA.Mods.Common.Widgets.Logic
 
 			if (path != null) {
 				Install(path);
-			} else if((path = InstallUtils.GetMountedDisk(IsTTFD)) !=null) {
-				InstallTTFD(Platform.ResolvePath(path,"data1.hdr"));
+			} else if ((path = InstallUtils.GetMountedDisk(IsTTFD)) != null) {
+				InstallTTFD(Platform.ResolvePath(path, "data1.hdr"));
 			} else {
-				insertDiskContainer.IsVisible = () => true;
-				installingContainer.IsVisible = () => false;
 			}
 		}
+
 		void InstallTTFD(string source) {
-			//backButton.IsDisabled = () => true;
+			////backButton.IsDisabled = () => true;
 			retryButton.IsDisabled = () => true;
-			insertDiskContainer.IsVisible = () => false;
-			installingContainer.IsVisible = () => true;
-			using(var cab_ex = new InstallShieldCABExtractor(source)) {
-				foreach(uint index in installData.TTFDIndexes){
+			using (var cab_ex = new InstallShieldCABExtractor(source)) {
+				foreach (uint index in installData.TTFDIndexes) {
 					string filename = cab_ex.FileName(index);
-					string dest = Platform.ResolvePath("^", "Content", 
+					string dest = Platform.ResolvePath("^", "Content",
 						Game.ModData.Manifest.Mod.Id, filename.ToLower());
-					cab_ex.ExtractFile(index,dest);
-				}	
+					cab_ex.ExtractFile(index, dest);
+				}
 			}
+
 			continueLoading();
 		}
 
@@ -94,8 +87,6 @@ namespace OpenRA.Mods.Common.Widgets.Logic
 		{
 			backButton.IsDisabled = () => true;
 			retryButton.IsDisabled = () => true;
-			insertDiskContainer.IsVisible = () => false;
-			installingContainer.IsVisible = () => true;
 
 			var dest = Platform.ResolvePath("^", "Content", Game.ModData.Manifest.Mod.Id);
 			var copyFiles = installData.CopyFilesFromCD;
@@ -107,18 +98,13 @@ namespace OpenRA.Mods.Common.Widgets.Logic
 			var extractFiles = installData.ExtractFilesFromCD;
 
 			var installCounter = 0;
-			var installTotal = copyFiles.Length + extractFiles.Length;
 			var onProgress = (Action<string>)(s => Game.RunAfterTick(() =>
 			{
-				progressBar.Percentage = installCounter * 100 / installTotal;
 				installCounter++;
-
-				statusLabel.GetText = () => s;
 			}));
 
 			var onError = (Action<string>)(s => Game.RunAfterTick(() =>
 			{
-				statusLabel.GetText = () => "Error: " + s;
 				backButton.IsDisabled = () => false;
 				retryButton.IsDisabled = () => false;
 			}));
@@ -144,7 +130,6 @@ namespace OpenRA.Mods.Common.Widgets.Logic
 
 					Game.RunAfterTick(() =>
 					{
-						statusLabel.GetText = () => "Game assets have been extracted.";
 						Ui.CloseWindow();
 						continueLoading();
 					});

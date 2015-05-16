@@ -68,6 +68,12 @@ Container@INSTALL_PANEL:
 			Width: 140
 			Height: 35
 			Text: Back
+		Button@TTFD_BUTTON:
+			X: 200
+			Y: 149
+			Width: 140
+			Height: 35
+			Text: First Decade 
 		Button@DOWNLOAD_BUTTON:
 			X: 350
 			Y: 149
@@ -82,7 +88,7 @@ Container@INSTALL_PANEL:
 			Text: Use CD
 
 Container@INSTALL_FROMCD_PANEL:
-	Logic: InstallFromTTFDLogic
+	Logic: InstallFromCDLogic
 	X: (WINDOW_RIGHT - WIDTH)/2
 	Y: (WINDOW_BOTTOM - 150)/2
 	Width: 640
@@ -205,3 +211,41 @@ Container@INSTALL_DOWNLOAD_PANEL:
 			Height: 35
 			Text: Retry
 
+Container@INSTALL_FROM_TTFD_PANEL:
+	Logic: InstallFromTTFDLogic
+	X: (WINDOW_RIGHT - WIDTH)/2
+	Y: (WINDOW_BOTTOM - 150)/2
+	Width: 640
+	Height: 150
+	Children:
+		Label@TITLE:
+			Width: PARENT_RIGHT
+			Y: 0-25
+			Font: BigBold
+			Contrast: true
+			Align: Center
+			Text: Please Insert Disk
+		Label@INFO:
+			X: 200
+			Y: 35
+			Width: PARENT_RIGHT-30
+			Height: 25
+			Text: Please Insert Disk and click 'Retry'
+			Font: Bold
+		Background@bg:
+			Width: 640
+			Height: 150
+			Background: panel-black
+		Button@BACK_BUTTON:
+			Key: escape
+			Y: 149
+			Width: 140
+			Height: 35
+			Text: Back
+		Button@RETRY_BUTTON:
+			Key: return
+			X: 500
+			Y: 149
+			Width: 140
+			Height: 35
+			Text: Retry

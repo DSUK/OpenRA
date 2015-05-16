@@ -34,6 +34,11 @@ namespace OpenRA.Mods.Common.Widgets.Logic
 			panel.Get<ButtonWidget>("INSTALL_BUTTON").OnClick = () =>
 				Ui.OpenWindow("INSTALL_FROMCD_PANEL", widgetArgs);
 
+			var ttfd = panel.GetOrNull<ButtonWidget>("TTFD_BUTTON");
+			if (ttfd != null) {
+				ttfd.OnClick = () => Ui.OpenWindow("INSTALL_FROM_TTFD_PANEL", widgetArgs);
+			}
+
 			panel.Get<ButtonWidget>("BACK_BUTTON").OnClick = () =>
 			{
 				Game.Settings.Game.PreviousMod = Game.ModData.Manifest.Mod.Id;
