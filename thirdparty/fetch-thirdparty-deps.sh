@@ -70,6 +70,7 @@ if [ ! -f FuzzyLogicLibrary.dll ]; then
 	cp ./FuzzyLogicLibrary/bin/Release/FuzzyLogicLibrary.dll .
 	rm -rf FuzzyLogicLibrary
 fi
+
 if [ ! -f Ionic.Zip.dll ]; then
 	echo "Fetching DotNetZip from NuGet."
 	nuget install DotNetZip -Version 1.9.3 -ExcludeVersion
